@@ -12,9 +12,9 @@ Python 2.3 or higher
 
 ## Problem sets
 
-0. Python programming, symbolic algebra
-1. Forward chaining, backward chaining and goal trees
-2. Search, using heuristics, optimal search, graph heuristics
-3. Game search
-4. Constraint satisfaction problems, k-nearest neighbors, decision trees
-5. Neural nets, boosting
+0. [Python programming, symbolic algebra](lab0/)
+1. [Forward chaining, backward chaining and goal trees](lab1/)
+2. [Search, using heuristics, optimal search, graph heuristics](lab2/)
+3. [Game search](lab3/)
+4. [Constraint satisfaction problems, k-nearest neighbors, decision trees](lab4/)
+5. [Neural nets, boosting](lab5/)
