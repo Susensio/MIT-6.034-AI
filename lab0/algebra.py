@@ -16,7 +16,7 @@
 # the distributive law.
 
 # Your goal is to fill in the do_multiply() function so that multiplication
-# can be simplified as intended. 
+# can be simplified as intended.
 
 # Testing will be mathematical:  If you return a flat list that
 # evaluates to the same value as the original expression, you will
@@ -35,7 +35,7 @@
 # Sum([1, 2, 3])
 
 
-### Expression classes _____________________________________________________
+# Expression classes _____________________________________________________
 
 # Expressions will be represented as "Sum()" and "Product()" objects.
 # These objects can be treated just like lists (they inherit from the
@@ -53,6 +53,7 @@ class Expression:
     "This abstract class does nothing on its own."
     pass
 
+
 class Sum(list, Expression):
     """
     A Sum acts just like a list in almost all regards, except that this code
@@ -67,9 +68,10 @@ class Sum(list, Expression):
       * You can convert an ordinary list to a sum with the Sum() constructor:
          the_sum = Sum(the_list)
     """
+
     def __repr__(self):
         return "Sum(%s)" % list.__repr__(self)
-    
+
     def simplify(self):
         """
         This is the starting point for the task you need to perform. It
@@ -97,9 +99,10 @@ class Product(list, Expression):
     See the documentation above for Sum. A Product acts almost exactly
     like a list, and can be converted to and from a list when necessary.
     """
+
     def __repr__(self):
         return "Product(%s)" % list.__repr__(self)
-    
+
     def simplify(self):
         """
         To simplify a product, we need to multiply all its factors together
@@ -128,6 +131,7 @@ class Product(list, Expression):
                 factors.append(factor)
         return Product(factors)
 
+
 def simplify_if_possible(expr):
     """
     A helper function that guards against trying to simplify a non-Expression.
@@ -141,6 +145,7 @@ def simplify_if_possible(expr):
 # "multiply" is provided for you; but you will need to write "do_multiply"
 # if you would like to use it.
 
+
 def multiply(expr1, expr2):
     """
     This function makes sure that its arguments are represented as either a
@@ -148,8 +153,10 @@ def multiply(expr1, expr2):
     """
     # Simple expressions that are not sums or products can be handled
     # in exactly the same way as products -- they just have one thing in them.
-    if not isinstance(expr1, Expression): expr1 = Product([expr1])
-    if not isinstance(expr2, Expression): expr2 = Product([expr2])
+    if not isinstance(expr1, Expression):
+        expr1 = Product([expr1])
+    if not isinstance(expr2, Expression):
+        expr2 = Product([expr2])
     return do_multiply(expr1, expr2)
 
 
@@ -173,6 +180,16 @@ def do_multiply(expr1, expr2):
     Look above for details on the Sum and Product classes. The Python operator
     '*' will not help you.
     """
-    # Replace this with your solution.
-    raise NotImplementedError
+    if isinstance(expr1, Sum) and isinstance(expr2, Sum):
+        result = Sum([Product([term1, term2]).flatten() for term1 in expr1 for term2 in expr2]).flatten()
 
+    if isinstance(expr1, Sum) and isinstance(expr2, Product):
+        result = Sum([Product([term1, expr2]).flatten() for term1 in expr1]).flatten()
+
+    if isinstance(expr1, Product) and isinstance(expr2, Sum):
+        result = Sum([Product([expr1, term2]).flatten() for term2 in expr2]).flatten()
+
+    if isinstance(expr1, Product) and isinstance(expr2, Product):
+        result = Product([expr1, expr2]).flatten()
+
+    return result
