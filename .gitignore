@@ -1,5 +1,7 @@
-Problem sets files
+# Problem sets files
 *lab*.pdf
+
+*.pyc
 
 # Windows image file caches
 Thumbs.db

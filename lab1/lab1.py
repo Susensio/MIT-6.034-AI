@@ -1,12 +1,12 @@
-# lab1.py 
+# lab1.py
 
-#You should start here when providing the answers to Problem Set 1.
-#Follow along in the problem set, which is at:
-#http://ai6034.mit.edu/fall12/index.php?title=Lab_1
+# You should start here when providing the answers to Problem Set 1.
+# Follow along in the problem set, which is at:
+# http://ai6034.mit.edu/fall12/index.php?title=Lab_1
 
 # Import helper objects that provide the logical operations
 # discussed in class.
-from production import IF, AND, OR, NOT, THEN, forward_chain
+from production import IF, AND, OR, NOT, THEN, DELETE, forward_chain
 
 ## Section 1: Forward chaining ##
 
@@ -17,7 +17,7 @@ from production import IF, AND, OR, NOT, THEN, forward_chain
 #    2. the consequent
 #    3. both
 
-ANSWER_1 = 'your answer here'
+ANSWER_1 = '2'
 
 # A rule-based system about Monty Python's "Dead Parrot" sketch
 # uses the following rules:
@@ -37,10 +37,10 @@ ANSWER_1 = 'your answer here'
 
 # Will this system produce the datum 'Polly is pining for the
 # fjords'?  Answer 'yes' or 'no'.
-ANSWER_2 = 'your answer here'
+ANSWER_2 = 'no'
 
 # Which rule contains a programming error? Answer '1' or '2'.
-ANSWER_3 = 'your answer here'
+ANSWER_3 = '2'
 
 # If you're uncertain of these answers, look in tests.py for an
 # explanation.
@@ -69,28 +69,30 @@ ANSWER_3 = 'your answer here'
 # what is asked.  After we start the system running, which rule
 # fires first?
 
-ANSWER_4 = 'your answer here'
+ANSWER_4 = '1'
 
 # Which rule fires second?
 
-ANSWER_5 = 'your answer here'
+ANSWER_5 = '0'
 
 
 # Problem 1.3.1: Poker hands
 
 # You're given this data about poker hands:
-poker_data = ( 'two-pair beats pair',
-               'three-of-a-kind beats two-pair',
-               'straight beats three-of-a-kind',
-               'flush beats straight',
-               'full-house beats flush',
-               'straight-flush beats full-house' )
+poker_data = ('two-pair beats pair',
+              'three-of-a-kind beats two-pair',
+              'straight beats three-of-a-kind',
+              'flush beats straight',
+              'full-house beats flush',
+              'straight-flush beats full-house')
 
 # Fill in this rule so that it finds all other combinations of
 # which poker hands beat which, transitively. For example, it
 # should be able to deduce that a three-of-a-kind beats a pair,
 # because a three-of-a-kind beats two-pair, which beats a pair.
-transitive_rule = IF( AND(), THEN() )
+transitive_rule = IF(AND('(?x) beats (?y)',
+                         '(?y) beats (?z)'),
+                     THEN('(?x) beats (?z)'))
 
 # You can test your rule like this:
 # print forward_chain([transitive_rule], poker_data)
@@ -98,11 +100,11 @@ transitive_rule = IF( AND(), THEN() )
 # Here's some other data sets for the rule. The tester uses
 # these, so don't change them.
 TEST_RESULTS_TRANS1 = forward_chain([transitive_rule],
-                                    [ 'a beats b', 'b beats c' ])
+                                    ['a beats b', 'b beats c'])
 TEST_RESULTS_TRANS2 = forward_chain([transitive_rule],
-  [ 'rock beats scissors', 
-    'scissors beats paper', 
-    'paper beats rock' ])
+                                    ['rock beats scissors',
+                                     'scissors beats paper',
+                                     'paper beats rock'])
 
 
 # Problem 1.3.2: Family relations
@@ -112,9 +114,39 @@ TEST_RESULTS_TRANS2 = forward_chain([transitive_rule],
 # able to refer to the rules by name and easily rearrange them if
 # you need to.
 
+same = IF(OR('male (?x)', 'female (?x)'),
+          THEN('same (?x) (?x)'))
+
+sibling = IF(AND('parent (?y) (?x)', 'parent (?y) (?z)', NOT('same (?x) (?z)')),
+             THEN('sibling (?x) (?z)', 'sibling (?z) (?x)'))
+
+brother = IF(AND('male (?x)', 'sibling (?x) (?y)'),
+             THEN('brother (?x) (?y)'))
+
+sister = IF(AND('female (?x)', 'sibling (?x) (?y)'),
+            THEN('sister (?x) (?y)'))
+
+mother = IF(AND('female (?x)', 'parent (?x) (?y)'),
+            THEN('mother (?x) (?y)'))
+
+father = IF(AND('male (?x)', 'parent (?x) (?y)'),
+            THEN('father (?x) (?y)'))
+
+son = IF(AND('male (?x)', 'parent (?y) (?x)'),
+         THEN('son (?x) (?y)'))
+
+daughter = IF(AND('female (?x)', 'parent (?y) (?x)'),
+              THEN('daughter (?x) (?y)'))
+
+cousin = IF(AND('parent (?v) (?x)', 'parent (?w) (?y)', OR('brother (?v) (?w)', 'sister (?v) (?w)')),
+            THEN('cousin (?x) (?y)', 'cousin (?y) (?x)'))
+
+granparent = IF(AND('parent (?x) (?y)', 'parent (?y) (?z)'),
+                THEN('granparent (?x) (?z)', 'granchild (?z) (?x)'))
+
 # Then, put them together into a list in order, and call it
 # family_rules.
-family_rules = [ ]                    # fill me in
+family_rules = [same, sibling, brother, sister, mother, father, son, daughter, cousin, granparent]                    # fill me in
 
 # Some examples to try it on:
 # Note: These are used for testing, so DO NOT CHANGE
@@ -132,7 +164,7 @@ simpsons_data = ("male bart",
                  "parent homer maggie",
                  "parent abe homer")
 TEST_RESULTS_6 = forward_chain(family_rules,
-                               simpsons_data,verbose=False)
+                               simpsons_data, verbose=False)
 # You can test your results by uncommenting this line:
 # print forward_chain(family_rules, simpsons_data, verbose=True)
 
@@ -161,10 +193,10 @@ black_data = ("male sirius",
 # This should generate 14 cousin relationships, representing
 # 7 pairs of people who are cousins:
 
-black_family_cousins = [ 
-    x for x in 
-    forward_chain(family_rules, black_data, verbose=False) 
-    if "cousin" in x ]
+black_family_cousins = [
+    x for x in
+    forward_chain(family_rules, black_data, verbose=False)
+    if "cousin" in x]
 
 # To see if you found them all, uncomment this line:
 # print black_family_cousins
@@ -175,34 +207,34 @@ black_family_cousins = [
 # Some other data sets to try it on. The tester uses these
 # results, so don't comment them out.
 
-TEST_DATA_1 = [ 'female alice',
-                'male bob',
-                'male chuck',
-                'parent chuck alice',
-                'parent chuck bob' ]
-TEST_RESULTS_1 = forward_chain(family_rules, 
+TEST_DATA_1 = ['female alice',
+               'male bob',
+               'male chuck',
+               'parent chuck alice',
+               'parent chuck bob']
+TEST_RESULTS_1 = forward_chain(family_rules,
                                TEST_DATA_1, verbose=False)
 
-TEST_DATA_2 = [ 'female a1', 'female b1', 'female b2', 
-                'female c1', 'female c2', 'female c3', 
-                'female c4', 'female d1', 'female d2', 
-                'female d3', 'female d4',
-                'parent a1 b1',
-                'parent a1 b2',
-                'parent b1 c1',
-                'parent b1 c2',
-                'parent b2 c3',
-                'parent b2 c4',
-                'parent c1 d1',
-                'parent c2 d2',
-                'parent c3 d3',
-                'parent c4 d4' ]
+TEST_DATA_2 = ['female a1', 'female b1', 'female b2',
+               'female c1', 'female c2', 'female c3',
+               'female c4', 'female d1', 'female d2',
+               'female d3', 'female d4',
+               'parent a1 b1',
+               'parent a1 b2',
+               'parent b1 c1',
+               'parent b1 c2',
+               'parent b2 c3',
+               'parent b2 c4',
+               'parent c1 d1',
+               'parent c2 d2',
+               'parent c3 d3',
+               'parent c4 d4']
 
-TEST_RESULTS_2 = forward_chain(family_rules, 
+TEST_RESULTS_2 = forward_chain(family_rules,
                                TEST_DATA_2, verbose=False)
 
 TEST_RESULTS_6 = forward_chain(family_rules,
-                               simpsons_data,verbose=False)
+                               simpsons_data, verbose=False)
 
 ## Section 2: Goal trees and backward chaining ##
 
@@ -213,7 +245,6 @@ from backchain import backchain_to_goal_tree
 ##; Section 3: Survey ##
 # Please answer these questions inside the double quotes.
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
+HOW_MANY_HOURS_THIS_PSET_TOOK = '3'
 WHAT_I_FOUND_INTERESTING = ''
 WHAT_I_FOUND_BORING = ''
-
