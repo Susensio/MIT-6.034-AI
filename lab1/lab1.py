@@ -246,5 +246,5 @@ from backchain import backchain_to_goal_tree
 # Please answer these questions inside the double quotes.
 
 HOW_MANY_HOURS_THIS_PSET_TOOK = '3'
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+WHAT_I_FOUND_INTERESTING = 'I love implementing recursion'
+WHAT_I_FOUND_BORING = 'None'
