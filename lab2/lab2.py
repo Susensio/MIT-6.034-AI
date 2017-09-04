@@ -50,8 +50,9 @@ def bfs(graph, start, goal):
         nodes_connected = graph.get_connected_nodes(path[-1])
         nodes_valid = [node for node in nodes_connected if node not in path and node not in extended]
         paths_extended = [path + [node] for node in nodes_valid]
-        agenda.remove(path)
+        extended.add(path[-1])
         agenda = agenda + paths_extended
+        agenda.remove(path)
 
 
 # Once you have completed the breadth-first search,
@@ -68,8 +69,9 @@ def dfs(graph, start, goal):
         nodes_connected = graph.get_connected_nodes(path[-1])
         nodes_valid = [node for node in nodes_connected if node not in path and node not in extended]
         paths_extended = [path + [node] for node in nodes_valid]
-        agenda.remove(path)
+        extended.add(path[-1])
         agenda = paths_extended + agenda
+        agenda.remove(path)
 
 
 # Now we're going to add some heuristics into the search.
@@ -77,18 +79,16 @@ def dfs(graph, start, goal):
 # Search direction should be towards lower heuristic values to the goal.
 def hill_climbing(graph, start, goal):
     agenda = [[start]]
-    extended = set()
     while True:
         path = agenda[0]
         if path[-1] == goal:
             return path
         nodes_connected = graph.get_connected_nodes(path[-1])
-        nodes_valid = [node for node in nodes_connected if node not in path and node not in extended]
+        nodes_valid = [node for node in nodes_connected if node not in path]
         paths_extended = [path + [node] for node in nodes_valid]
-        paths_extended
-        agenda.remove(path)
+        paths_extended.sort(key=lambda nodes: graph.get_heuristic(nodes[-1], goal))
         agenda = paths_extended + agenda
-        agenda.sort(key=lambda nodes: path_length(graph, nodes) + graph.get_heuristic(nodes[-1], goal))
+        agenda.remove(path)
 
 
 # Now we're going to implement beam search, a variation on BFS
@@ -96,10 +96,30 @@ def hill_climbing(graph, start, goal):
 # we maintain only k candidate paths of length n in our agenda at any time.
 # The k top candidates are to be determined using the
 # graph get_heuristic function, with lower values being better values.
-
-
 def beam_search(graph, start, goal, beam_width):
-    raise NotImplementedError
+    agenda = [[[start]], []]
+    depth = 0
+    while True:
+        # If there are no paths left, return empty path
+        try:
+            path = agenda[depth][0]
+        except IndexError:
+            return []
+
+        if path[-1] == goal:
+            return path
+
+        nodes_connected = graph.get_connected_nodes(path[-1])
+        nodes_valid = [node for node in nodes_connected if node not in path]
+        paths_extended = [path + [node] for node in nodes_valid]
+        agenda[depth + 1].extend(paths_extended)
+        agenda[depth + 1].sort(key=lambda nodes: graph.get_heuristic(nodes[-1], goal))
+        agenda[depth + 1] = agenda[depth + 1][:beam_width]
+
+        agenda[depth].remove(path)
+        if len(agenda[depth]) == 0:
+            depth += 1
+            agenda.append([])
 
 # Now we're going to try optimal search.  The previous searches haven't
 # used edge distances in the calculation.
@@ -114,11 +134,33 @@ def path_length(graph, node_names):
 
 
 def branch_and_bound(graph, start, goal):
-    raise NotImplementedError
+    agenda = [[start]]
+    while True:
+        path = agenda[0]
+        if path[-1] == goal:
+            return path
+        nodes_connected = graph.get_connected_nodes(path[-1])
+        nodes_valid = [node for node in nodes_connected if node not in path]
+        paths_extended = [path + [node] for node in nodes_valid]
+        agenda = paths_extended + agenda
+        agenda.remove(path)
+        agenda.sort(key=lambda nodes: path_length(graph, nodes))
 
 
 def a_star(graph, start, goal):
-    raise NotImplementedError
+    agenda = [[start]]
+    extended = set()
+    while True:
+        path = agenda[0]
+        if path[-1] == goal:
+            return path
+        nodes_connected = graph.get_connected_nodes(path[-1])
+        nodes_valid = [node for node in nodes_connected if node not in path and node not in extended]
+        paths_extended = [path + [node] for node in nodes_valid]
+        agenda = paths_extended + agenda
+        extended.add(path[-1])
+        agenda.remove(path)
+        agenda.sort(key=lambda nodes: path_length(graph, nodes) + graph.get_heuristic(nodes[-1], goal))
 
 
 # It's useful to determine if a graph has a consistent and admissible
@@ -127,13 +169,24 @@ def a_star(graph, start, goal):
 # consistent, but not admissible?
 
 def is_admissible(graph, goal):
-    raise NotImplementedError
+    for node in graph.nodes:
+        length = path_length(graph, branch_and_bound(graph, node, goal))
+        heuristic = graph.get_heuristic(node, goal)
+        if heuristic > length:
+            return False
+    return True
 
 
 def is_consistent(graph, goal):
-    raise NotImplementedError
+    for start in graph.nodes:
+        for end in graph.nodes:
+            length = path_length(graph, branch_and_bound(graph, start, end))
+            heuristic = abs(graph.get_heuristic(start, goal) - graph.get_heuristic(end, goal))
+            if heuristic > length:
+                return False
+    return True
 
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+HOW_MANY_HOURS_THIS_PSET_TOOK = '5'
+WHAT_I_FOUND_INTERESTING = 'Little implementation differences between algorithms lead to big behaviour differences'
+WHAT_I_FOUND_BORING = 'Nothing at all'
