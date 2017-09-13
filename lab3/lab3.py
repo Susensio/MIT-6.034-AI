@@ -2,7 +2,8 @@
 # Name: <Your Name>
 # Email: <Your Email>
 
-from util import INFINITY
+from util import INFINITY, NEG_INFINITY
+import timeit
 
 # 1. Multiple choice
 
@@ -65,15 +66,28 @@ def focused_evaluate(board):
         # Therefore, we can't have won, so return -1000.
         # (note that this causes a tie to be treated like a loss)
         score = -1000
+        score += board.num_tokens_on_board()
+
     else:
-        player = board.get_current_player_id()
-        opponent = board.get_other_player_id()
+        # player = board.get_current_player_id()
+        # opponent = board.get_other_player_id()
 
-        longest_player = board.longest_chain(player)
-        longest_opponent = board.longest_chain(opponent)
+        # longest_player = board.longest_chain(player)
+        # longest_opponent = board.longest_chain(opponent)
 
-        score = 10 * longest_player**3
-        score -= 10 * longest_opponent**3
+        # score = 10 * longest_player**3
+        # score -= 10 * longest_opponent**3
+
+        score = board.longest_chain(board.get_current_player_id()) * 10
+        score -= board.longest_chain(board.get_other_player_id()) * 10
+        # Prefer having your pieces in the center of the board.
+        for row in range(6):
+            for col in range(7):
+                if board.get_cell(row, col) == board.get_current_player_id():
+                    score -= abs(3 - col)
+                elif board.get_cell(row, col) == board.get_other_player_id():
+                    score += abs(3 - col)
+
     return score
 
 # Create a "player" function that uses the focused_evaluate function
@@ -83,7 +97,10 @@ def quick_to_win_player(board): return minimax(board, depth=4, eval_fn=focused_e
 
 
 # You can try out your new evaluation function by uncommenting this line:
-run_game(basic_player, quick_to_win_player)
+# ts = timeit.default_timer()
+# run_game(basic_player, quick_to_win_player)
+# te = timeit.default_timer()
+# print "quick_to_win_player: ", te - ts
 
 # Write an alpha-beta-search procedure that acts like the minimax-search
 # procedure, but uses alpha-beta pruning to avoid searching bad ideas
@@ -102,15 +119,64 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
                       is_terminal_fn=is_terminal):
-    raise NotImplementedError
+
+    best_val = None
+    alpha = NEG_INFINITY
+    beta = INFINITY
+
+    for move, new_board in get_next_moves_fn(board):
+        val = -1 * alpha_beta_search_find_board_value(new_board, depth - 1, eval_fn,
+                                                      -beta, -alpha,
+                                                      get_next_moves_fn,
+                                                      is_terminal_fn)
+        if best_val == None or val > best_val[0]:
+            best_val = (val, move, new_board)
+
+        alpha = max(alpha, val)
+
+    return best_val[1]
+
+
+def alpha_beta_search_find_board_value(board, depth, eval_fn,
+                                       alpha, beta,
+                                       get_next_moves_fn=get_all_next_moves,
+                                       is_terminal_fn=is_terminal):
+    """
+    Minimax helper function: Return the minimax value of a particular board,
+    given a particular depth to estimate to
+    """
+    if is_terminal_fn(depth, board):
+        return eval_fn(board)
+
+    best_val = None
+
+    for move, new_board in get_next_moves_fn(board):
+        val = -1 * alpha_beta_search_find_board_value(new_board, depth - 1, eval_fn,
+                                                      -beta, -alpha,
+                                                      get_next_moves_fn, is_terminal_fn)
+        if best_val == None or val > best_val:
+            best_val = val
+
+        alpha = max(alpha, val)
+        if alpha > beta:
+            # Prune!
+            # print "Pruned! \nboard=%s \talpha=%d \tbeta=%d \tval=%d" % (board, alpha, beta, val)
+            return alpha
+
+    return best_val
 
 
 # Now you should be able to search twice as deep in the same amount of time.
 # (Of course, this alpha-beta-player won't work until you've defined
 # alpha-beta-search.)
-def alphabeta_player(board): return alpha_beta_search(board,
-                                                      depth=8,
-                                                      eval_fn=focused_evaluate)
+def alphabeta_player(board): return alpha_beta_search(board, depth=4, eval_fn=focused_evaluate)
+
+
+# You can try out your new evaluation function by uncommenting this line:
+# ts = timeit.default_timer()
+# run_game(basic_player, alphabeta_player)
+# te = timeit.default_timer()
+# print "alphabeta_player: ", te - ts
 
 # This player uses progressive deepening, so it can kick your ass while
 # making efficient use of time:
@@ -119,8 +185,10 @@ def alphabeta_player(board): return alpha_beta_search(board,
 def ab_iterative_player(board): return \
     run_search_function(board,
                         search_fn=alpha_beta_search,
-                        eval_fn=focused_evaluate, timeout=5)
-#run_game(human_player, alphabeta_player)
+                        eval_fn=focused_evaluate, timeout=1)
+
+
+run_game(basic_player, ab_iterative_player)
 
 # Finally, come up with a better evaluation function than focused-evaluate.
 # By providing a different function, you should be able to beat
@@ -179,12 +247,14 @@ def your_player(board): return run_search_function(board,
 
 
 def run_test_game(player1, player2, board):
-    assert isinstance(globals()[board], ConnectFourBoard), "Error: can't run a game using a non-Board object!"
+    assert isinstance(globals()[board], ConnectFourBoard), \
+        "Error: can't run a game using a non-Board object!"
     return run_game(globals()[player1], globals()[player2], globals()[board])
 
 
 def run_test_search(search, board, depth, eval_fn):
-    assert isinstance(globals()[board], ConnectFourBoard), "Error: can't run a game using a non-Board object!"
+    assert isinstance(globals()[board], ConnectFourBoard), \
+        "Error: can't run a game using a non-Board object!"
     return globals()[search](globals()[board], depth=depth,
                              eval_fn=globals()[eval_fn])
 
