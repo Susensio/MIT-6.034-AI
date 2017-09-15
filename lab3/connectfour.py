@@ -55,14 +55,13 @@ class ConnectFourBoard(object):
 
     A Connect-Four board is a matrix, laid out as follows:
 
-         0 1 2 3 4 5 6 7
-       0 * * * * * * * *
-       1 * * * * * * * *
-       2 * * * * * * * *
-       3 * * * * * * * *
-       4 * * * * * * * *
-       5 * * * * * * * *
-       6 * * * * * * * *
+         0 1 2 3 4 5 6
+       0 * * * * * * *
+       1 * * * * * * *
+       2 * * * * * * *
+       3 * * * * * * *
+       4 * * * * * * *
+       5 * * * * * * *
 
     Board columns fill from the bottom (ie., row 6).
     """

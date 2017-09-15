@@ -45,7 +45,7 @@ import tree_searcher
 # run_game(basic_player, human_player)
 
 # Or watch the computer@# play against itself:
-# run_game(basic_player, basic_player)
+run_game(basic_player, basic_player)
 
 # Change this evaluation function so that it tries to win as soon as possible,
 # or lose as late as possible, when it decides that one side is certain to win.
@@ -185,10 +185,8 @@ def alphabeta_player(board): return alpha_beta_search(board, depth=4, eval_fn=fo
 def ab_iterative_player(board): return \
     run_search_function(board,
                         search_fn=alpha_beta_search,
-                        eval_fn=focused_evaluate, timeout=1)
-
-
-run_game(basic_player, ab_iterative_player)
+                        eval_fn=focused_evaluate, timeout=5)
+#run_game(human_player, ab_iterative_player)
 
 # Finally, come up with a better evaluation function than focused-evaluate.
 # By providing a different function, you should be able to beat
@@ -272,11 +270,11 @@ def run_test_tree_search(search, board, depth):
 # Do you want us to use your code in a tournament against other students? See
 # the description in the problem set. The tournament is completely optional
 # and has no effect on your grade.
-COMPETE = (None)
+COMPETE = False
 
 # The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = ""
-WHAT_I_FOUND_INTERESTING = ""
-WHAT_I_FOUND_BORING = ""
-NAME = ""
-EMAIL = ""
+HOW_MANY_HOURS_THIS_PSET_TOOK = "7"
+WHAT_I_FOUND_INTERESTING = "Recursive implementation of minimax in one function"
+WHAT_I_FOUND_BORING = "Nothing"
+NAME = "Saul Nogueras"
+EMAIL = "susensio@gmail.com"
