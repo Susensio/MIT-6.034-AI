@@ -244,6 +244,52 @@ class ConnectFourBoard(object):
                 reverse(self._contig_vector_cells(row, col, (-1,1))) + [(row, col)] + self._contig_vector_cells(row, col, (1,-1)) 
                  ] ]
 
+
+    def _contig_vector_length_threat(self, row, col, direction, playerid):
+        """
+        Starting in the specified cell and going a step of direction = (row_step, col_step),
+        count how many consecutive cells are owned by the same player as the starting cell.
+        """
+        count = 1
+
+        row += direction[0]
+        col += direction[1]
+
+        while 0 <= row < self.board_height and 0 <= col < self.board_width and playerid == self.get_cell(row, col):
+            row += direction[0]
+            col += direction[1]
+            count += 1
+
+        return count - 1
+
+
+    def _max_threat_from_cell(self, row, col, playerid):
+        """ Return the max-length chain containing this cell """
+        return max( self._contig_vector_length_threat(row, col, (1,1), playerid) + self._contig_vector_length_threat(row, col, (-1,-1), playerid) + 1,
+                    self._contig_vector_length_threat(row, col, (1,0), playerid) + self._contig_vector_length_threat(row, col, (-1,0), playerid) + 1,
+                    self._contig_vector_length_threat(row, col, (0,1), playerid) + self._contig_vector_length_threat(row, col, (0,-1), playerid) + 1,
+                    self._contig_vector_length_threat(row, col, (-1,1), playerid) + self._contig_vector_length_threat(row, col, (1,-1), playerid) + 1 )
+
+
+    def _is_threat_from_cell(self, row, col, playerid):
+        """ Return if this cell is a threat from playerid """
+        return (self._max_threat_from_cell(row, col, playerid) >= 4)
+
+
+    def threats(self):
+        retVal = {1:[], 2:[]}
+        for i in xrange(self.board_height):
+            for j in xrange(self.board_width):
+                if self.get_cell(i,j) == 0:
+                    if self._is_threat_from_cell(i,j,self.get_current_player_id()):
+                        retVal[self.get_current_player_id()].append((i,j))
+                    if self._is_threat_from_cell(i,j,self.get_other_player_id()):
+                        retVal[self.get_other_player_id()].append((i,j))
+                    
+        return retVal
+
+
+
     def chain_cells(self, playerid):
         """
         Returns a set of all cells on the board that are part of a chain controlled
@@ -408,6 +454,7 @@ class ConnectFourRunner(object):
                         print unicode(self._board)
                     else:
                         print str(self._board)
+                    # print self._board.threats()
 
                 has_moved = False
 
@@ -432,7 +479,7 @@ class ConnectFourRunner(object):
 
         win_for_player = self._board.is_win()
                 
-        if win_for_player != 0 and self._board.is_tie():
+        if win_for_player == 0 and self._board.is_tie():
             print "It's a tie!  No winner is declared."
             return 0
         else:
