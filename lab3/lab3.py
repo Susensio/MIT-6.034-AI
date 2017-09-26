@@ -39,7 +39,7 @@ import tree_searcher
 # grader-bot to play a game!
 ##
 # Uncomment this line to play a game as white:
-# run_game(human_player, basic_player)
+run_game(human_player, basic_player)
 
 # Uncomment this line to play a game as black:
 # run_game(basic_player, human_player)
